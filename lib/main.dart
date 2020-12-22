@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'quizz_brain.dart';
+
+QuizzBrain newQuizBrain = QuizzBrain();
 
 void main() => runApp(Quizzler());
 
@@ -7,7 +11,7 @@ class Quizzler extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: Colors.grey.shade900,
+        backgroundColor: Colors.indigo[900],
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 10.0),
@@ -25,6 +29,54 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
+  List<Icon> ScoreKeeper = [];
+  List<Text> ScoreCount = [];
+  int countScoreMethod(List<Text> list, String element) {
+    if (list == null || list.isEmpty) {
+      return 0;
+    }
+
+    var foundElements = list.where((e) => e == element);
+    return foundElements.length;
+  }
+
+  //
+  void userPickedAns(bool userAns) {
+    bool correctAns = newQuizBrain.getQuestionAns();
+    setState(() {
+      if (newQuizBrain.isFinished() == true) {
+        Alert(
+                context: context,
+                title: "Finished !",
+                desc: "Your Score is ${ScoreCount.length} /12 ")
+            .show();
+
+        newQuizBrain.reset();
+        ScoreKeeper = [];
+      } else {
+        if (userAns == correctAns) {
+          ScoreKeeper.add(
+            Icon(
+              Icons.check,
+              color: Colors.green,
+            ),
+          );
+          ScoreCount.add(
+            Text('a'),
+          );
+        } else {
+          ScoreKeeper.add(
+            Icon(
+              Icons.close,
+              color: Colors.red,
+            ),
+          );
+        }
+        newQuizBrain.nextQuestion();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -37,11 +89,12 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                'This is where the question text will go.',
+                newQuizBrain.getQuestionText(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 25.0,
+                  fontSize: 30.0,
                   color: Colors.white,
+                  //fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -62,6 +115,7 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 //The user picked true.
+                userPickedAns(true);
               },
             ),
           ),
@@ -80,18 +134,16 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 //The user picked false.
+                userPickedAns(false);
               },
             ),
           ),
         ),
         //TODO: Add a Row here as your score keeper
+        Row(
+          children: ScoreKeeper,
+        ),
       ],
     );
   }
 }
-
-/*
-question1: 'You can lead a cow down stairs but not up stairs.', false,
-question2: 'Approximately one quarter of human bones are in the feet.', true,
-question3: 'A slug\'s blood is green.', true,
-*/
